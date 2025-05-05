@@ -119,7 +119,7 @@ export enum EventType {
   OrderCreated = 'order:created',
   CardClick = 'card:click',
   CardAdd = 'card:add',
-  CardRemove = 'card:remove',
+  BasketBasketItemRremove = 'basket:basketItem:remove',
   HeaderBasketClick = 'header:basket:click',
   CheckoutStep1Next = 'checkout:step1:next',
   CheckoutStep2Submit = 'checkout:step2:submit',
