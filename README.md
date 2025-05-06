@@ -191,26 +191,26 @@ abstract class Model<T> {
 Каталог товаров. Хранит список всех Product и выбранный для подробного просмотра товар.
 Свойства:
 ```ts
-/** Массив всех загруженных товаров. */
+/** Массив всех загруженных товаров */
 products: IProduct[]
 
-/** Текущая карточка, открытая в попапе. */
+/** Текущая карточка, открытая в попапе */
 selectedProduct: IProduct | null
 ```
 Методы:
 ```ts
 constructor(private emitter: EventEmitter) {}
 
-/** Инициализация массива при загрузке с сервера. */
+/** Инициализация массива при загрузке с сервера */
 init(items: IProduct[]): void
 
-/** Получить текущий список товаров. */
+/** Получить текущий список товаров */
 getAll(): IProduct[]
 
-/** Отметить товар как selectedProduct (открыть попап). */
+/** Отметить товар как selectedProduct (открыть попап) */
 select(id: string): void
 
-/** Сбросить selectedProduct (закрыть попап). */
+/** Сбросить selectedProduct (закрыть попап) */
 clearSelection(): void
 ```
 
@@ -219,7 +219,7 @@ clearSelection(): void
 
 Свойства:
 ```ts
-/** Массив товаров в корзине. */
+/** Массив товаров в корзине */
 items: IBasketItem[]
 ```
 Методы:
@@ -230,19 +230,19 @@ constructor(private emitter: EventEmitter) {}
 init(items: IBasketItem[]): void
 
 /** Добавить товар, если его там ещё нет.
-Для price === null — не добавляем, кнопка должна быть заблокирована. */
+Для price === null — не добавляем, кнопка должна быть заблокирована */
 add(product: IProduct): void
 
-/** Удалить товар из корзины. */
+/** Удалить товар из корзины */
 remove(productId: string): void
 
-/** Очистить корзину полностью. */
+/** Очистить корзину полностью */
 clear(): void
 
-/** Вернуть копию текущего массива. */
+/** Вернуть копию текущего массива */
 getItems(): IBasketItem[]
 
-/** Посчитать сумму всех цен. */
+/** Посчитать сумму всех цен */
 getTotal(): number
 ```
 
@@ -260,19 +260,19 @@ address: string
 ``` ts
 constructor(private emitter: EventEmitter) {}
 
-/** меняет способ оплаты и валидирует что не null. */
+/** меняет способ оплаты и валидирует что не null */
 setPayment(method: PaymentMethod): boolean 
 
-/** Обновляет поле почта и валидирует. */
+/** Обновляет поле почта и валидирует */
 setEmail(email: string): boolean
 
-/** обновляет поле телефон, валидирует. */
+/** обновляет поле телефон, валидирует */
 setPhone(phone: string): boolean
 
-/** обновляет поле адрес, валидирует. */
+/** обновляет поле адрес, валидирует */
 setAddress(address: string): boolean
 
-/** Сброс всех полей. */
+/** Сброс всех полей */
 reset(): void
 ```
 ## Компоненты представления 
@@ -281,221 +281,233 @@ reset(): void
 
 Конструктор:
 ```ts
-container: HTMLElement //корневой контейнер страницы.
-events: IEvents //объект для работы с событиями.
+container: HTMLElement //корневой контейнер страницы
+events: IEvents //объект для работы с событиями
 ```
 Атрибуты:
 ```ts
-counter: HTMLElement //элемент для отображения количества товаров в корзине.
-catalog: HTMLElement //контейнер для списка карточек.
-basketBtn: HTMLButtonElement //кнопка открытия корзины.
-wrapper: HTMLElement //обёртка всей страницы.
+counter: HTMLElement //элемент для отображения количества товаров в корзине
+catalog: HTMLElement //контейнер для списка карточек
+basketButton: HTMLButtonElement //кнопка открытия корзины
+wrapper: HTMLElement //обёртка всей страницы
 ```
 Сеттеры:
 ```ts
-- `set count(value: number)` — обновляет текст счётчика.
-- `set items(products: IProduct[])` — рендерит список товаров в каталоге.
+set count(value: number) //обновляет текст счётчика
+set items(products: IProduct[]) //рендерит список товаров в каталоге
 ```
-События:
-- По клику на `basketBtn` эмиттится событие `basket:open`.
 
 2. **Modal**
-
-**Описание:**
 Управляет модальным окном: открытие, закрытие, вставка контента.
 
-**Конструктор:**
-- `container: HTMLElement` — контейнер модального окна.
-- `events: IEvents` — объект для событий.
+Конструктор:
+```ts
+container: HTMLElement //контейнер модального окна
+events: IEvents //объект для событий
+```
+Атрибуты:
+```ts
+closeButton: HTMLButtonElement //кнопка закрытия окна
+content: HTMLElement // контейнер для вставки содержимого
+```
+Сеттеры:
+```ts
+set body(data: IModal) //устанавливает и рендерит переданный элемент
+```
+Методы:
+```ts
+open() //показывает модальное окно
+close() //скрывает окно, очищает контент
+render(data: IModal): HTMLElement //возвращает переданный элемент для вставки
+```
 
-**Атрибуты:**
-- `closeButton: HTMLButtonElement` — кнопка закрытия окна.
-- `content: HTMLElement` — контейнер для вставки содержимого.
-
-**Сеттеры:**
-- `set body(data: IModal)` — устанавливает и рендерит переданный элемент.
-
-**Методы:**
-- `open()` — показывает модальное окно.
-- `close()` — скрывает окно, очищает контент и эмиттит `modal:closed`.
-- `render(data: IModal): HTMLElement` — возвращает переданный элемент для вставки.
-
----
-
-## 3. Basket
-
-**Описание:**
+3. **Basket**
 Отображает содержимое корзины внутри модального окна: список товаров, сумму и кнопку оформления.
 
-**Конструктор:**
-- `container: HTMLElement` — контейнер корзины.
-- `events: IEvents` — объект для событий.
+Конструктор:
+```ts
+container: HTMLElement //контейнер корзины
+events: IEvents
+```
+Атрибуты:
+```ts
+list: HTMLElement // список товаров в корзине
+total: HTMLElement //элемент показа общей суммы
+button: HTMLButtonElement //кнопка начала оформления заказа
+```
+Сеттеры:
+```ts
+set items(items: IBasketItem[]) //рендерит элементы корзины.
+set totalSum(value: number) //обновляет текст с общей суммой.
+set disabled(state: boolean) //блокирует/разблокирует кнопку оформления.
+```
 
-**Атрибуты:**
-- `list: HTMLElement` — список товаров в корзине.
-- `total: HTMLElement` — элемент показа общей суммы.
-- `button: HTMLButtonElement` — кнопка начала оформления заказа.
-
-**Сеттеры:**
-- `set items(items: IBasketItem[])` — рендерит элементы корзины.
-- `set totalSum(value: number)` — обновляет текст с общей суммой.
-- `set disabled(state: boolean)` — блокирует/разблокирует кнопку оформления.
-
-**События:**
-- По клику на `button` эмиттится `order:start`.
-- При рендере каждого товара эмиттится `basket:item:render`.
-
----
-
-## 4. Form<T>
-
-**Описание:**
+4. **Form<T>**
 Базовый класс для форм: валидация, отображение ошибок, управление кнопкой отправки.
 
-**Конструктор:**
-- `container: HTMLFormElement` — корневой элемент формы.
-- `events: IEvents` — объект для событий.
+Конструктор:
+```ts
+container: HTMLFormElement //корневой элемент формы
+events: IEvents
+```
+Атрибуты:
+```ts
+error: HTMLElement //элемент для вывода текстовых ошибо
+valid: boolean //флаг валидности формы
+submitBtn: HTMLButtonElement //кнопка отправки/далее
+```
+Методы:
+```ts
+reset() //сброс полей, ошибок и состояния кнопки
+render(data?: Partial<T>): HTMLFormElement //возвращает форму
+```
+Сеттер:
+```ts
+protected set validState(state: boolean) //переключает состояние кнопки отправки
+```
 
-**Атрибуты:**
-- `error: HTMLElement` — элемент для вывода текстовых ошибок.
-- `valid: boolean` — флаг валидности формы.
-- `submitBtn: HTMLButtonElement` — кнопка отправки/далее.
-
-**Методы:**
-- `reset()` — сброс полей, ошибок и состояния кнопки.
-- `render(data?: Partial<T>): HTMLFormElement` — возвращает форму.
-
-**Сеттер:**
-- `protected set validState(state: boolean)` — переключает состояние кнопки отправки.
-
----
-
-## 5. Order
-
-**Описание:**
+5. **Order**
 Форма выбора способа оплаты и ввода адреса доставки.
 Наследуется от `Form<{ payment: string; address: string }>`.
 
-**Конструктор:**
-- `container: HTMLFormElement` — шаблон формы.
-- `events: IEvents` — объект для событий.
+Конструктор:
+```ts
+container: HTMLFormElement //шаблон формы
+events: IEvents
+```
+Атрибуты:
+```ts
+cashBtn: HTMLButtonElement //кнопка "При получении"
+cardBtn: HTMLButtonElement //кнопка "Онлайн"
+addressInput: HTMLInputElement //поле ввода адреса
+```
+Сеттеры:
+```ts
+set payment(method: 'cash' | 'online') //визуально отмечает выбранный метод
+set address(value: string) //заполняет поле адреса
+set disabled(state: boolean) //блокирует/разблокирует кнопку "далее"
+```
+Методы:
+```ts
+selectPayment(method) //обновляет UI
+```
 
-**Атрибуты:**
-- `cashBtn: HTMLButtonElement` — кнопка «При получении».
-- `cardBtn: HTMLButtonElement` — кнопка «Онлайн».
-- `addressInput: HTMLInputElement` — поле ввода адреса.
-
-**Сеттеры:**
-- `set payment(method: 'cash' | 'online')` — визуально отмечает выбранный метод.
-- `set address(value: string)` — заполняет поле адреса.
-
-**Методы:**
-- `selectPayment(method)` — эмиттит `order:setPayment` и обновляет UI.
-- `validate()` — проверяет наличие непустого адреса, показывает ошибку и включает кнопку.
-
----
-
-## 6. Contacts
-
-**Описание:**
+6. **Contacts**
 Форма ввода контактных данных (email и телефон).
 Наследуется от `Form<{ email: string; phone: string }>`.
 
-**Конструктор:**
-- `container: HTMLFormElement` — шаблон формы.
-- `events: IEvents` — объект для событий.
+Конструктор:
+```ts
+container: HTMLFormElement //шаблон формы
+events: IEvents 
+```
+Атрибуты:
+```ts
+emailInput: HTMLInputElement //поле ввода email
+phoneInput: HTMLInputElement //поле ввода телефона
+```
+Сеттеры:
+```ts
+set email(value: string) //заполняет поле email
+set phone(value: string) //заполняет поле телефона
+set disabled(state: boolean) //блокирует/разблокирует кнопку "Оплатить"
+```
 
-**Атрибуты:**
-- `emailInput: HTMLInputElement` — поле ввода email.
-- `phoneInput: HTMLInputElement` — поле ввода телефона.
-
-**Сеттеры:**
-- `set email(value: string)` — заполняет поле email.
-- `set phone(value: string)` — заполняет поле телефона.
-
-**Методы:**
-- `validateEmail()` — проверка формата email.
-- `validatePhone()` — проверка формата телефона.
-
----
-
-## 7. Success
-
-**Описание:**
+7. **Success**
 Окно с сообщением об успешном оформлении заказа.
 
-**Конструктор:**
-- `container: HTMLElement` — шаблон содержимого.
-- `events: IEvents` — объект для событий.
+Конструктор:
+```ts
+container: HTMLElement //шаблон содержимого
+events: IEvents
+```
+Атрибуты:
+```ts
+closeBtn: HTMLElement //кнопка закрытия
+total: HTMLElement //элемент для отображения суммы заказа
+```
+Сеттер:
+```ts
+set orderTotal(value: number) //устанавливает сумму в тексте
+```
+Метод:
+```ts
+render(): HTMLElement //возвращает готовый элемент
+```
 
-**Атрибуты:**
-- `closeBtn: HTMLElement` — кнопка закрытия.
-- `total: HTMLElement` — элемент для отображения суммы заказа.
-
-**Сеттер:**
-- `set orderTotal(value: number)` — устанавливает сумму в тексте.
-
-**Метод:**
-- `render(): HTMLElement` — возвращает готовый элемент.
-
----
-
-## 8. Card
-
-**Описание:**
+8. **Card**
 Карточка товара для каталога или списка в корзине.
 
-**Конструктор:**
-- `container: HTMLElement` — шаблон карточки.
-- `events: IEvents` — объект для событий.
-- `action?: ICardAction` — опциональные колбэки для кнопок.
+Конструктор:
+```ts
+container: HTMLElement //шаблон карточки
+events: IEvents
+action?: ICardAction //опциональные колбэки для кнопок удаления
+```
+Атрибуты:
+```ts
+image: HTMLImageElement
+category: HTMLElement
+title: HTMLElement
+description: HTMLElement
+price: HTMLElement
+deleteBtn?: HTMLButtonElement
+```
+Сеттеры:
+```ts
+set data(product: IProduct) //заполняет все поля (изображение, текст, цена)
+```
+Метод:
+```ts
+render(data: IProduct): HTMLElement //заполняет данные и возвращает контейнер
+```
 
-**Атрибуты:**
-- `image: HTMLImageElement`
-- `category: HTMLElement`
-- `title: HTMLElement`
-- `description: HTMLElement`
-- `price: HTMLElement`
-- `buyBtn: HTMLButtonElement`
-- `deleteBtn?: HTMLButtonElement`
 
-**Сеттеры:**
-- `set data(product: IProduct)` — заполняет все поля (изображение, текст, цена), блокирует кнопку «Купить» если цена отсутствует.
-
-**Геттер:**
-- `get id(): string` — возвращает `dataset.id` контейнера.
-
-**Метод:**
-- `render(data: IProduct): HTMLElement` — заполняет данные и возвращает контейнер.
-
----
-
-## 9. CardPreview
-
-**Описание:**
+9. **CardPreview**
 Компонент предварительного просмотра карточки, используется в модальном всплывающем окне подробностей товара.
 
-**Конструктор:**
-- `container: HTMLElement` — корневой контейнер превью.
-- `events: IEvents` — объект для событий.
+Конструктор:
+```ts
+container: HTMLElement //корневой контейнер превью
+events: IEvents
+```
+Атрибуты:
+```ts
+image: HTMLImageElement //крупное изображение товара
+title: HTMLElement //заголовок товара
+description: HTMLElement //полное описание товара
+price: HTMLElement //отображение цены или текста "Бесценно"
+closeBtn: HTMLButtonElement //кнопка закрытия превью
+buyBtn: HTMLButtonElement //кнопка добавления в корзину
+```
+Сеттеры:
+```ts
+set data(product: IProduct) //заполняет все поля данными товара.
+set disabled(state: boolean) //блокирует/разблокирует кнопку покупки.
+```
+Методы:
+```ts
+render(data: IProduct): HTMLElement //возвращает заполненный элемент превью
+open(): void //отображает превью
+close(): void //скрывает превью
+```
 
-**Атрибуты:**
-- `image: HTMLImageElement` — крупное изображение товара.
-- `title: HTMLElement` — заголовок товара.
-- `description: HTMLElement` — полное описание товара.
-- `price: HTMLElement` — отображение цены или текста «Бесценно».
-- `closeBtn: HTMLButtonElement` — кнопка закрытия превью.
-- `buyBtn: HTMLButtonElement` — кнопка добавления в корзину.
-
-**Сеттеры:**
-- `set data(product: IProduct)` — заполняет все поля данными товара.
-- `set disabled(state: boolean)` — блокирует/разблокирует кнопку покупки.
-
-**Методы:**
-- `render(data: IProduct): HTMLElement` — возвращает заполненный элемент превью.
-- `open(): void` — отображает превью (если скрыто).
-- `close(): void` — скрывает превью.
-
-**События:**
-- По клику на `buyBtn` эмиттится `card:buy`.
-- По клику на `closeBtn` эмиттится `modal:closed`.
+## Основные события
+state:update - изменение состояния приложения
+modal:open - открытие модального окна
+modal:close - закрытие модального окна
+### События карточек
+cards:changed - изменение элементов каталога
+cardPreview:open - открытие предпросмотра товара в модальном окне
+cardPreview:close - закрытие предпросмотра товара в модальном окне
+### События корзины
+basket:open - открытие корзины
+basket:changed - изменение состояния корзины 
+basket:submit - потверждение товаров в корзине и открытие формы для внесения данных о заказе
+### События Заказа
+payment:select - изменение выбора способа оплаты
+order:submit - подтверждение внесенных данных и открытие формы заполнения контактов
+contacts:submit - потверждение введенных данных в полях формы контактов, отправка заказа на сервер
+success:submit - закрытие окна со статусом об успешной отправке заказа на сервер
+order:change - изменение полей ввода в форме с информацией о заказе
+contacts:change - изменение полей ввода в форме с информацией о контактах пользователя

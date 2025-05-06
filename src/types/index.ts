@@ -1,50 +1,43 @@
 export type PaymentMethod = 'online' | 'cash';
+export type ComponentContainer = HTMLElement | HTMLFormElement;
+export type ApiPostMethods = 'POST' | 'PUT' | 'PATCH';
+export type EventName = string;
 
-interface IProduct {
+//API-данные
+export interface IProduct {
   id: string;
-  /** Название товара */
   title: string;
-  /** Описание товара */
   description: string;
-  /** Ссылка на изображение */
   image: string;
-  /** Категория товара */
   category: string;
-  /** Цена товара или null, если "бесценный" */
   price: number | null;
 }
 
 export interface IBasketItem {
-  /** Продукт */
   product: IProduct;
 }
 
 export interface IOrderRequest {
-  /** Способ оплаты */
   payment: PaymentMethod;
-  /** Почта покупателя */
   email: string;
-  /** Телефон покупателя */
   phone: string;
-  /** Адрес доставки */
   address: string;
-  /** Общая сумма заказа (бесценные товары не учитываются) */
   total: number;
-  /** Массив id товаров */
   items: string[];
 }
 
-
-/** Модель управления товарами */
+//Данные моделей
 export interface IProductsModel {
+  products: IProduct[];
+  selectedProduct: IProduct | null;
   init(items: IProduct[]): void;
   getAll(): IProduct[];
   select(id: string): void;
   clearSelection(): void;
 }
 
-/** Модель управления корзиной */
 export interface IBasketModel {
+  items: IBasketItem[];
   init(items: IBasketItem[]): void;
   add(product: IProduct): void;
   remove(productId: string): void;
@@ -53,8 +46,11 @@ export interface IBasketModel {
   getTotal(): number;
 }
 
-/** Модель управления данными оформления заказа */
 export interface ICheckoutFormModel {
+  payment: PaymentMethod | null;
+  email: string;
+  phone: string;
+  address: string;
   setPayment(method: PaymentMethod): boolean;
   setEmail(email: string): boolean;
   setPhone(phone: string): boolean;
@@ -62,72 +58,32 @@ export interface ICheckoutFormModel {
   reset(): void;
 }
 
-
-/** Базовый интерфейс UI-компонента */
-export interface IBaseComponent {
-  render(container: HTMLElement): void;
-  show(): void;
-  hide(): void;
-  bindEvents(): void;
+//Интерфейс клиента API
+export interface IApiClient {
+  get<T = any>(uri: string): Promise<T>;
+  post<T = any>(uri: string, data: object, method?: ApiPostMethods): Promise<T>;
 }
 
-/** Интерфейс карточки товара */
-export interface ICardComponent extends IBaseComponent {
-  update(product: IProduct): void;
+//Интерфейсы базовых компонентов
+export interface IComponent<T> {
+  render(data?: Partial<T>): HTMLElement;
 }
 
-/** Интерфейс модального окна */
-export interface IModalComponent extends IBaseComponent {
-  open(...args: any): void;
-  close(): void;
-  setContent(element: HTMLElement): void;
+export interface IModel<T> {
+  emitChanges(event: string, payload?: object): void;
 }
 
-/** Интерфейс детального просмотра товара */
-export interface IProductModalComponent extends IModalComponent {
-  open(product: IProduct): void;
-  bindAdd(): void;
+//Интерфейс модального окна
+export interface IModal {
+  render(): HTMLElement;
 }
 
-/** Интерфейс просмотра корзины */
-export interface IBasketModalComponent extends IModalComponent {
-  open(items: IBasketItem[], total: number): void;
-  bindRemove(): void;
-  updateTotal(total: number): void;
+
+//События
+
+export interface IEvents {
+  on<T extends object>(event: EventName, callback: (data: T) => void): void;
+  emit<T extends object>(event: string, data?: T): void;
+  trigger<T extends object>(event: string, context?: Partial<T>): (data: T) => void;
 }
 
-/** Интерфейс компонента шагов оформления заказа */
-export interface ICheckoutStepComponent extends IModalComponent {
-  open(): void;
-  bindFormEvents(): void;
-  validate(): void;
-}
-
-/** Интерфейс компонента успеха заказа */
-export interface ISuccessModalComponent extends IModalComponent {
-  open(total: number): void;
-  bindClose(): void;
-}
-
-// Перечисление типов событий
-export enum EventType {
-  ProductsChanged = 'products:changed',
-  ProductSelected = 'product:selected',
-  BasketChanged = 'basket:changed',
-  CheckoutStep1Validated = 'checkout:step1:validated',
-  CheckoutStep2Validated = 'checkout:step2:validated',
-  OrderCreated = 'order:created',
-  CardClick = 'card:click',
-  CardAdd = 'card:add',
-  BasketBasketItemRremove = 'basket:basketItem:remove',
-  HeaderBasketClick = 'header:basket:click',
-  CheckoutStep1Next = 'checkout:step1:next',
-  CheckoutStep2Submit = 'checkout:step2:submit',
-  ModalClose = 'modal:close',
-}
-
-/** Интерфейс события в шине EventEmitter */
-export interface IEvent<T = any> {
-  type: EventType;
-  payload: T;
-}
