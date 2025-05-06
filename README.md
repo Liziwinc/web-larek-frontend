@@ -148,7 +148,7 @@ class EventEmitter implements IEvents {
 3. **Класс Component**
 Абстрактный класс, который реализует логику взаимодействия с компонентами отображения.
 ```ts
-abstract class Components { 
+abstract class Component<T> { 
     protected constructor(protected readonly container: HTMLElement) {}
     // Инструментарий для работы с DOM в дочерних компонентах
 
@@ -188,7 +188,7 @@ abstract class Model<T> {
 ## Модели данных
 
 1. **Класс ProductsModel**
-Назначение: Каталог товаров. Хранит список всех Product и выбранный для подробного просмотра товар.
+Каталог товаров. Хранит список всех Product и выбранный для подробного просмотра товар.
 Свойства:
 ```ts
 /** Массив всех загруженных товаров. */
@@ -215,7 +215,7 @@ clearSelection(): void
 ```
 
 2. **Класс BasketModel**
-Назначение: хранит локальную корзину IBasketItem[], обеспечивает добавление/удаление.
+Хранит локальную корзину IBasketItem[], обеспечивает добавление/удаление.
 
 Свойства:
 ```ts
@@ -247,7 +247,7 @@ getTotal(): number
 ```
 
 3. **Класс CheckoutFormModel**
-Назначение: хранит данные введенные на шагах оформления и проверяет их.
+Хранит данные введенные на шагах оформления и проверяет их.
 
 Свойства:
 ```ts
@@ -275,201 +275,227 @@ setAddress(address: string): boolean
 /** Сброс всех полей. */
 reset(): void
 ```
-
 ## Компоненты представления 
+1. **Page**
+Компонент главной страницы: отображает счётчик товаров, каталог карточек и кнопку открытия корзины.
 
-1. class BaseComponent
-Назначение: Базовый класс для всех UI-компонентов.
-
-Методы:
+Конструктор:
+```ts
+container: HTMLElement //корневой контейнер страницы.
+events: IEvents //объект для работы с событиями.
 ```
-/** отрисовать разметку. */
-render(container: HTMLElement): void 
-
-/** показать/скрыть компонент. */
-show(): void 
-hide(): void 
-
-/** привязать DOM-события. */
-bindEvents(): void 
+Атрибуты:
+```ts
+counter: HTMLElement //элемент для отображения количества товаров в корзине.
+catalog: HTMLElement //контейнер для списка карточек.
+basketBtn: HTMLButtonElement //кнопка открытия корзины.
+wrapper: HTMLElement //обёртка всей страницы.
 ```
-
-2. class CardComponent
-Назначение: Отвечает за отрисовку карточки товара.
-
-Методы:
+Сеттеры:
+```ts
+- `set count(value: number)` — обновляет текст счётчика.
+- `set items(products: IProduct[])` — рендерит список товаров в каталоге.
 ```
-Constructor: (product: IProduct, template: HTMLTemplateElement)
+События:
+- По клику на `basketBtn` эмиттится событие `basket:open`.
 
-/** вставляет шаблон карточки (catalog / preview / basket). */
-render(container: HTMLElement): void 
+2. **Modal**
 
-/** обновить данные (сменить кнопку при добавлении в корзину). */
-update(product: IProduct): void 
+**Описание:**
+Управляет модальным окном: открытие, закрытие, вставка контента.
 
-/** на кнопку "Купить". */
-bindEvents(): click 
-```
-3. class ModalComponent
-Назначение: Универсальный модальный класс.
+**Конструктор:**
+- `container: HTMLElement` — контейнер модального окна.
+- `events: IEvents` — объект для событий.
 
-Методы:
-```
-Constructor: (template: HTMLTemplateElement)
+**Атрибуты:**
+- `closeButton: HTMLButtonElement` — кнопка закрытия окна.
+- `content: HTMLElement` — контейнер для вставки содержимого.
 
-/** добавить класс modal_active. */
-open(): void
+**Сеттеры:**
+- `set body(data: IModal)` — устанавливает и рендерит переданный элемент.
 
-/** убрать modal_active. */
-close(): void 
+**Методы:**
+- `open()` — показывает модальное окно.
+- `close()` — скрывает окно, очищает контент и эмиттит `modal:closed`.
+- `render(data: IModal): HTMLElement` — возвращает переданный элемент для вставки.
 
-/** вставить в .modal__content. */
-setContent(element: HTMLElement): void 
+---
 
-/** закрытие по клику вне или по кресту. */
-bindCloseEvents(): void 
-```
-4. class ProductModalComponent extends ModalComponent
-Назначение: Детальный просмотр товара.
+## 3. Basket
 
-Методы:
-```
-Constructor: (template: HTMLTemplateElement)
+**Описание:**
+Отображает содержимое корзины внутри модального окна: список товаров, сумму и кнопку оформления.
 
-/** рендер через CardComponent и открыть. */
-open(product: IProduct): void 
+**Конструктор:**
+- `container: HTMLElement` — контейнер корзины.
+- `events: IEvents` — объект для событий.
 
-/** кнопки добавления в корзину. */
-bindAdd(): void 
-```
-5. class BasketModalComponent extends ModalComponent
-Назначение: Просмотр и управление корзиной.
+**Атрибуты:**
+- `list: HTMLElement` — список товаров в корзине.
+- `total: HTMLElement` — элемент показа общей суммы.
+- `button: HTMLButtonElement` — кнопка начала оформления заказа.
 
-Методы:
-```
-Constructor: (template: HTMLTemplateElement)
+**Сеттеры:**
+- `set items(items: IBasketItem[])` — рендерит элементы корзины.
+- `set totalSum(value: number)` — обновляет текст с общей суммой.
+- `set disabled(state: boolean)` — блокирует/разблокирует кнопку оформления.
 
-/** рендер списка компактных карточек. */
-open(items: IBasketItem[]): void 
+**События:**
+- По клику на `button` эмиттится `order:start`.
+- При рендере каждого товара эмиттится `basket:item:render`.
 
-/** удаление товара из корзины. */
-bindRemove(): void
+---
 
-/** обновление суммы. */
-updateTotal(total: number): void 
-```
-6. class CheckoutStepComponent extends ModalComponent
-Назначение: Шаги оформления заказа.
+## 4. Form<T>
 
-Методы:
-```
-Constructor: (template: HTMLTemplateElement, step: 1|2)
+**Описание:**
+Базовый класс для форм: валидация, отображение ошибок, управление кнопкой отправки.
 
-/** вставить форму и открыть. */
-open(): void 
+**Конструктор:**
+- `container: HTMLFormElement` — корневой элемент формы.
+- `events: IEvents` — объект для событий.
 
-/** ввод полей, переключение кнопок. */
-bindFormEvents(): void 
+**Атрибуты:**
+- `error: HTMLElement` — элемент для вывода текстовых ошибок.
+- `valid: boolean` — флаг валидности формы.
+- `submitBtn: HTMLButtonElement` — кнопка отправки/далее.
 
-/** активация кнопки "Далее" или "Оплатить". */
-validate(): void 
-```
-7. class SuccessModalComponent extends ModalComponent
-Назначение: Сообщение об успешном заказе.
+**Методы:**
+- `reset()` — сброс полей, ошибок и состояния кнопки.
+- `render(data?: Partial<T>): HTMLFormElement` — возвращает форму.
 
-Методы:
-```
-Constructor: (template: HTMLTemplateElement)
+**Сеттер:**
+- `protected set validState(state: boolean)` — переключает состояние кнопки отправки.
 
-/** подставить сумму и открыть. */
-open(total: number): void 
+---
 
-/** кнопка "За новыми покупками!". */
-bindClose(): void
-```
-## Описание событий
-Для управления взаимодействием между данными и представлениями используется централизованный EventEmitter. 
+## 5. Order
 
-### События от моделей данных
+**Описание:**
+Форма выбора способа оплаты и ввода адреса доставки.
+Наследуется от `Form<{ payment: string; address: string }>`.
 
-1. products:changed
+**Конструктор:**
+- `container: HTMLFormElement` — шаблон формы.
+- `events: IEvents` — объект для событий.
 
-Источник: ProductsModel
-Данные события: обновлённый массив товаров items: IProduct[]
-Действия: Очистить и заново отрисовать галерею товаров через GalleryComponent.render(items)
+**Атрибуты:**
+- `cashBtn: HTMLButtonElement` — кнопка «При получении».
+- `cardBtn: HTMLButtonElement` — кнопка «Онлайн».
+- `addressInput: HTMLInputElement` — поле ввода адреса.
 
-2. product:selected
+**Сеттеры:**
+- `set payment(method: 'cash' | 'online')` — визуально отмечает выбранный метод.
+- `set address(value: string)` — заполняет поле адреса.
 
-Источник: ProductsModel
-Данные события: выбранный товар product: IProduct
-Действия: Вызвать ProductModalComponent.open(product) для показа детального попапа
+**Методы:**
+- `selectPayment(method)` — эмиттит `order:setPayment` и обновляет UI.
+- `validate()` — проверяет наличие непустого адреса, показывает ошибку и включает кнопку.
 
-3. basket:changed
+---
 
-Источник: BasketModel
-Данные события: текущие элементы корзины items: IBasketItem[] и сумма total: number
-Действия:
-Обновить счётчик в шапке через HeaderComponent.updateCounter(items.length)
-Если открыт попап корзины, вызвать BasketModalComponent.update(items, total)
+## 6. Contacts
 
-4. checkout:step1:validated
+**Описание:**
+Форма ввода контактных данных (email и телефон).
+Наследуется от `Form<{ email: string; phone: string }>`.
 
-Источник: CheckoutFormModel
-Данные события: результат валидации valid: boolean
-Действия: Активировать или деактивировать кнопку "Далее" на шаге 1 через CheckoutStepComponent.toggleNext(valid)
+**Конструктор:**
+- `container: HTMLFormElement` — шаблон формы.
+- `events: IEvents` — объект для событий.
 
-5. checkout:step2:validated
+**Атрибуты:**
+- `emailInput: HTMLInputElement` — поле ввода email.
+- `phoneInput: HTMLInputElement` — поле ввода телефона.
 
-Источник: CheckoutFormModel
-Данные события: результат валидации valid: boolean
-Действия: Активировать или деактивировать кнопку "Оплатить" на шаге 2 через CheckoutStepComponent.togglePay(valid)
+**Сеттеры:**
+- `set email(value: string)` — заполняет поле email.
+- `set phone(value: string)` — заполняет поле телефона.
 
-6. order:created
+**Методы:**
+- `validateEmail()` — проверка формата email.
+- `validatePhone()` — проверка формата телефона.
 
-Источник: ответ API
-Данные события: объект заказа и итоговая сумма { order: IOrderRequest, id: string, total: number }
-Действия:
-Вызвать SuccessModalComponent.open(total) для показа подтверждения
-Очищать корзину через BasketModel.clear() и  запустить basket:changed
+---
 
-### События от компонентов представления
+## 7. Success
 
-1. card:click
+**Описание:**
+Окно с сообщением об успешном оформлении заказа.
 
-Источник: CardComponent (при клике на карточку)
-Данные события: идентификатор товара productId: string
-Действия: Вызвать ProductsModel.select(productId)
+**Конструктор:**
+- `container: HTMLElement` — шаблон содержимого.
+- `events: IEvents` — объект для событий.
 
-2. card:add
+**Атрибуты:**
+- `closeBtn: HTMLElement` — кнопка закрытия.
+- `total: HTMLElement` — элемент для отображения суммы заказа.
 
-Источник: CardComponent (при клике "Купить")
-Данные события: объект товара product: IProduct
-Действия: Вызвать BasketModel.add(product)
+**Сеттер:**
+- `set orderTotal(value: number)` — устанавливает сумму в тексте.
 
-3. basket:basketItem:remove
+**Метод:**
+- `render(): HTMLElement` — возвращает готовый элемент.
 
-Источник: BasketModalComponent (при клике Удалить)
-Данные события: идентификатор товара productId: string
-Действия: Вызвать BasketModel.remove(productId)
+---
 
-4. header:basket:click
+## 8. Card
 
-Источник: HeaderComponent (при клике на иконку корзины)
-Действия: Вызвать BasketModalComponent.open(BasketModel.getItems(), BasketModel.getTotal())
+**Описание:**
+Карточка товара для каталога или списка в корзине.
 
-5. checkout:step1:next
+**Конструктор:**
+- `container: HTMLElement` — шаблон карточки.
+- `events: IEvents` — объект для событий.
+- `action?: ICardAction` — опциональные колбэки для кнопок.
 
-Источник: CheckoutStepComponent (шаг 1 — кнопка «Далее»)
-Действия: Вызвать CheckoutFormModel.validateStep1()
+**Атрибуты:**
+- `image: HTMLImageElement`
+- `category: HTMLElement`
+- `title: HTMLElement`
+- `description: HTMLElement`
+- `price: HTMLElement`
+- `buyBtn: HTMLButtonElement`
+- `deleteBtn?: HTMLButtonElement`
 
-6. checkout:step2:submit
+**Сеттеры:**
+- `set data(product: IProduct)` — заполняет все поля (изображение, текст, цена), блокирует кнопку «Купить» если цена отсутствует.
 
-Источник: CheckoutStepComponent (шаг 2 — кнопка «Оплатить»)
-Действия: Вызвать CheckoutFormModel.validateStep2(). При true инициировать создание заказа через OrderAPI.create()
+**Геттер:**
+- `get id(): string` — возвращает `dataset.id` контейнера.
 
-7. modal:close
+**Метод:**
+- `render(data: IProduct): HTMLElement` — заполняет данные и возвращает контейнер.
 
-Источник: любой ModalComponent (кнопка крестика или клик вне окна)
-Действия: Вызвать ModalComponent.close() для текущего модального.
+---
 
+## 9. CardPreview
 
+**Описание:**
+Компонент предварительного просмотра карточки, используется в модальном всплывающем окне подробностей товара.
+
+**Конструктор:**
+- `container: HTMLElement` — корневой контейнер превью.
+- `events: IEvents` — объект для событий.
+
+**Атрибуты:**
+- `image: HTMLImageElement` — крупное изображение товара.
+- `title: HTMLElement` — заголовок товара.
+- `description: HTMLElement` — полное описание товара.
+- `price: HTMLElement` — отображение цены или текста «Бесценно».
+- `closeBtn: HTMLButtonElement` — кнопка закрытия превью.
+- `buyBtn: HTMLButtonElement` — кнопка добавления в корзину.
+
+**Сеттеры:**
+- `set data(product: IProduct)` — заполняет все поля данными товара.
+- `set disabled(state: boolean)` — блокирует/разблокирует кнопку покупки.
+
+**Методы:**
+- `render(data: IProduct): HTMLElement` — возвращает заполненный элемент превью.
+- `open(): void` — отображает превью (если скрыто).
+- `close(): void` — скрывает превью.
+
+**События:**
+- По клику на `buyBtn` эмиттится `card:buy`.
+- По клику на `closeBtn` эмиттится `modal:closed`.
