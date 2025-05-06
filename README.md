@@ -43,14 +43,19 @@ yarn build
 
 ## Архитектура
 
+Проект реализован на основе паттерна MVP (Model-View-Presenter)
+Model  - хранит данные и управляет бизнес-логикой приложения
+View  - отвечает за отображение данных на интерфейсе пользователя
+Presenter - осуществляет взаимодействие между Model и View
+
 ## Описание данных
 Тип оплаты: онлайн или при получении
-```
+```ts
 type PaymentMethod = 'online' | 'cash';
 ```
 
 Интерфейс товара
-```
+```ts
 interface IProduct {
   id: string;
   /** Название товара */
@@ -69,9 +74,9 @@ interface IProduct {
 — для карточек каталога и детальной карточки в попапе.
 
 Интерфейс элемента корзины 
-```
+```ts
 interface IBasketItem {
-  /** Продукт *
+  /** Продукт */
   product: IProduct;
 }
 ```
@@ -79,7 +84,7 @@ interface IBasketItem {
 
 
 Интерфейс запроса создания заказа
-```
+```ts
 interface IOrderRequest {
   /** Способ оплаты */
   payment: PaymentMethod;
@@ -96,13 +101,96 @@ interface IOrderRequest {
 }
 ```
 Используется при отправке POST /order на сервер.
+## Базовый код 
+1. **Класс EventEmitter**
+Реализует паттерн «Наблюдатель» и позволяет подписываться на события и уведомлять подписчиков
+о наступлении события.
+
+```ts
+export interface IEvents {
+    on<T extends object>(event: EventName, callback: (data: T) => void): void;
+    emit<T extends object>(event: string, data?: T): void;
+    trigger<T extends object>(event: string, context?: Partial<T>): (data: T) => void;
+}
+
+class EventEmitter implements IEvents {
+    /** Установить обработчик на событие*/
+    on<T extends object>(eventName: EventName, callback: (event: T) => void) {}
+
+    /** Снять обработчик с события*/
+    off(eventName: EventName, callback: Subscriber) {}
+
+    /**Инициировать событие с данными*/
+    emit<T extends object>(eventName: string, data?: T) {}
+
+    /**Слушать все события*/
+    onAll(callback: (event: EmitterEvent) => void) {}
+
+    /** Сбросить все обработчики*/
+    offAll() {}
+    /** Сделать коллбек триггер, генерирующий событие при вызове*/
+    trigger<T extends object>(eventName: string, context?: Partial<T>) {}
+}
+```
+2. **Класс Api**
+Класс, который реализует логику взаимодействия с API сервера.
+
+```ts
+ class Api {
+    readonly baseUrl: string;
+    protected options: RequestInit;
+    constructor(baseUrl: string, options: RequestInit = {}) {}
+    get(uri: string) {}
+    post(uri: string, data: object, method: ApiPostMethods = 'POST') {}
+    protected handleResponse(response: Response): Promise<object> {}
+}
+```
+3. **Класс Component**
+Абстрактный класс, который реализует логику взаимодействия с компонентами отображения.
+```ts
+abstract class Components { 
+    protected constructor(protected readonly container: HTMLElement) {}
+    // Инструментарий для работы с DOM в дочерних компонентах
+
+    // Переключить класс
+    toggleClass(element: HTMLElement, className: string, force?: boolean) {}
+
+    // Установить текстовое содержимое
+    protected setText(element: HTMLElement, value: unknown) {}
+
+    // Сменить статус блокировки
+    setDisabled(element: HTMLElement, state: boolean) {}
+
+    // Скрыть
+    protected setHidden(element: HTMLElement) {}
+
+    // Показать
+    protected setVisible(element: HTMLElement) {}
+
+    // Установить изображение с алтернативным текстом
+    protected setImage(element: HTMLImageElement, src: string, alt?: string) {}
+
+    // Вернуть корневой DOM-элемент
+    render(data?: Partial<T>): HTMLElement {}
+}
+```
+4. **Класс Model**
+Абстрактный класс, который реализует основу чтобы можно было отличить ее от простых объектов с данными.
+```ts
+abstract class Model<T> {
+    constructor(data: Partial<T>, protected events: IEvents) {}
+
+    // Сообщить всем что модель поменялась
+    emitChanges(event: string, payload?: object) {}
+}
+```
 
 ## Модели данных
 
-1. class ProductsModel
-Назначение: Каталог товаров. Хранит список всех IProduct и выбранный для подробного просмотра товар.
+1. **Класс ProductsModel**
+Назначение: Каталог товаров. Хранит список всех Product и выбранный для подробного просмотра товар.
 Свойства:
-```
+```ts
 /** Массив всех загруженных товаров. */
 products: IProduct[]
 
@@ -110,7 +198,9 @@ products: IProduct[]
 selectedProduct: IProduct | null
 ```
 Методы:
-```
+```ts
+constructor(private emitter: EventEmitter) {}
+
 /** Инициализация массива при загрузке с сервера. */
 init(items: IProduct[]): void
 
@@ -124,16 +214,18 @@ select(id: string): void
 clearSelection(): void
 ```
 
-2. class BasketModel
+2. **Класс BasketModel**
 Назначение: хранит локальную корзину IBasketItem[], обеспечивает добавление/удаление.
 
 Свойства:
-```
+```ts
 /** Массив товаров в корзине. */
 items: IBasketItem[]
 ```
 Методы:
-```
+```ts
+constructor(private emitter: EventEmitter) {}
+
 /** Инициализация */
 init(items: IBasketItem[]): void
 
@@ -154,18 +246,20 @@ getItems(): IBasketItem[]
 getTotal(): number
 ```
 
-3. сlass CheckoutFormModel
+3. **Класс CheckoutFormModel**
 Назначение: хранит данные введенные на шагах оформления и проверяет их.
 
 Свойства:
-```
+```ts
 payment: PaymentMethod | null /** (если не выбрал еще) */
 email: string
 phone: string
 address: string
 ```
 Методы:
-```
+``` ts
+constructor(private emitter: EventEmitter) {}
+
 /** меняет способ оплаты и валидирует что не null. */
 setPayment(method: PaymentMethod): boolean 
 
