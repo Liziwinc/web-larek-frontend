@@ -1,5 +1,4 @@
 import './scss/styles.scss';
-import { Api, ApiListResponse } from './components/base/api';
 import { API_URL, CDN_URL } from './utils/constants';
 import { WebLarekApi } from './components/WebLarekApi';
 import { EventEmitter } from './components/base/events';
@@ -11,6 +10,8 @@ import { Modal } from './components/common/Modal';
 import { Basket } from './components/common/Basket';
 import { Order, Сontacts } from './components/Order';
 import { Success } from './components/common/Success';
+import { FormValidator } from './components/common/Form';
+
 
 // --- API и события ---
 const api = new WebLarekApi(CDN_URL, API_URL);
@@ -60,6 +61,10 @@ events.on('preview:changed', (item: Product) => {
     onClick: () => events.emit('card:add', item)
   });
 
+  
+  const isInBasket = appData.basket.some(p => p.id === item.id);
+  card.disabled = isInBasket;
+
   modal.render({
     content: card.render({
       title: item.title,
@@ -81,7 +86,8 @@ events.on('card:add', (item: Product) => {
 
 // --- Открытие корзины ---
 events.on('basket:open', () => {
-  basket.setDisabled(basket.button, appData.statusBasket);
+  const hasOnlyOnePriceless = appData.basket.length === 1 && appData.basket[0].price === null;
+  basket.setDisabled(basket.button, appData.basket.length === 0 || hasOnlyOnePriceless);
   basket.total = appData.getTotal();
 
   let i = 1;
@@ -156,19 +162,25 @@ events.on('order:submit', () => {
 
 events.on<{ field: string; value: string }>('contacts.email:change', ({ value }) => {
   appData.order.email = value;
+  contacts.valid = FormValidator.validateContacts(appData.order.email, appData.order.phone);
 });
 
 events.on<{ field: string; value: string }>('contacts.phone:change', ({ value }) => {
   appData.order.phone = value;
+  contacts.valid = FormValidator.validateContacts(appData.order.email, appData.order.phone);
 });
 
 // --- Отправка заказа ---
 events.on('contacts:submit', () => {
   appData.total = appData.getTotal();
+  appData.order.items = appData.getValidOrderItems();
+
 
   api.post('/order', appData.order)
     .then(() => {
-      appData.basket = [];
+      appData.basket = []; 
+      contacts.reset();         
+      order.reset();
       page.counter = 0;
 
       const successComponent = new Success(cloneTemplate(successTemplate), {
@@ -193,6 +205,8 @@ events.on('modal:open', () => {
 
 events.on('modal:close', () => {
   page.locked = false;
+  order.reset();
+  contacts.reset();
 });
 
 // --- Загрузка с сервера ---

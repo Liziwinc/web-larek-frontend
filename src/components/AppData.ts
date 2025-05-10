@@ -17,7 +17,7 @@ export class AppState extends Model<IAppState> { // Класс AppData для у
     phone: '',
     items: []
   };
-  // formErrors: FormErrors = {}; // Ошибки формы
+  private _total = 0;
 
   setCatalog(items: IProduct[]) { // Метод для установки каталога товаров
     this.catalog = items.map(item => new Product(item, this.events)); // Создание объектов Product
@@ -61,13 +61,25 @@ export class AppState extends Model<IAppState> { // Класс AppData для у
     return this.basket;
   }
 
-  set total(value: number) { // Сеттер для установки итоговой суммы заказа
+  set total(value: number) {
+    this._total = value;
     this.order.total = value;
   }
-
-  getTotal() { // Метод для подсчета итоговой суммы заказа
-    return this.order.items.reduce((a, c) => a + this.catalog.find(it => it.id === c).price, 0);
+  
+  get total(): number {
+    return this._total;
   }
+
+  getTotal(): number {
+    return this.basket.reduce((sum, item) => sum + (item.price ?? 0), 0);
+  }
+  
+  getValidOrderItems(): string[] {
+    return this.basket
+      .filter((item) => item.price !== null)
+      .map((item) => item.id);
+  }
+  
 
 }
 

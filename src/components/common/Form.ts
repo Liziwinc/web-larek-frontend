@@ -122,3 +122,11 @@ export class Form<T> extends Component<IFormState> {
     }
   }
   
+// Статическая утилита для валидации email и телефона
+export class FormValidator {
+  static validateContacts(email: string, phone: string): boolean {
+    const isValidEmail = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/.test(email);
+    const isValidPhone = /^\+7\d{10}$/.test(phone);
+    return isValidEmail && isValidPhone;
+  }
+}

@@ -32,6 +32,17 @@ export class Order extends Form<IOrderRequest> {
   set address(value: string) {
     (this.container.elements.namedItem('address') as HTMLInputElement).value = value; // Установка значения в input с именем 'address'
   }
+
+  reset() {
+    this._buttons.forEach(button => this.toggleClass(button, 'button_alt-active', false));
+    const addressInput = this.container.elements.namedItem('address') as HTMLInputElement;
+    if (addressInput) {
+      addressInput.value = '';
+    }
+    this.valid = false;
+    this._errors.textContent = '';
+  }
+  
 }
 
 // Класс для обработки формы с контактными данными
@@ -49,4 +60,16 @@ export class Сontacts extends Form<IOrderRequest> {
   set email(value: string) {
     (this.container.elements.namedItem('email') as HTMLInputElement).value = value; // Установка значения в input с именем 'email'
   }
+
+  reset() {
+    const emailInput = this.container.elements.namedItem('email') as HTMLInputElement;
+    const phoneInput = this.container.elements.namedItem('phone') as HTMLInputElement;
+  
+    if (emailInput) emailInput.value = '';
+    if (phoneInput) phoneInput.value = '';
+  
+    this.valid = false;
+    this._errors.textContent = '';
+  }
+  
 }

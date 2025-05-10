@@ -86,6 +86,13 @@ export class CardPreview extends Card<ICardPreview> { // Класс для ка�
   set text(value: string) { // Сеттер для текста предпросмотра
     this.setText(this._text, value);
   }
+
+  set disabled(value: boolean) {
+    if (this._button) {
+      this.setDisabled(this._button, value);
+    }
+  }
+  
 }
 
 interface ICardBasket { // Интерфейс для карточки корзины
