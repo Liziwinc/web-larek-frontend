@@ -26,6 +26,14 @@ export interface IOrderRequest {
   items: string[];
 }
 
+export interface IOrder extends IOrderRequest {
+  items: string[];
+}
+
+export interface IOrderResult {
+  id: string;
+}
+
 //Данные моделей
 export interface IProductsModel {
   products: IProduct[];
@@ -78,12 +86,13 @@ export interface IModal {
   render(): HTMLElement;
 }
 
-
-//События
-
-export interface IEvents {
-  on<T extends object>(event: EventName, callback: (data: T) => void): void;
-  emit<T extends object>(event: string, data?: T): void;
-  trigger<T extends object>(event: string, context?: Partial<T>): (data: T) => void;
+export interface IAppState {
+  catalog: IProduct[];
+  preview: string;
+  basket: string[];
+  order: IOrder;
+  total: string | number;
+  loading: boolean;
 }
+
 
