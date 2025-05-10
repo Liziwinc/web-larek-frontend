@@ -13,11 +13,11 @@ import { Success } from './components/common/Success';
 import { FormValidator } from './components/common/Form';
 
 
-// --- API и события ---
+// API и события
 const api = new WebLarekApi(CDN_URL, API_URL);
 const events = new EventEmitter();
 
-// --- Шаблоны ---
+//  Шаблоны 
 const successTemplate = ensureElement<HTMLTemplateElement>('#success');
 const cardCatalogTemplate = ensureElement<HTMLTemplateElement>('#card-catalog');
 const cardPreviewTemplate = ensureElement<HTMLTemplateElement>('#card-preview');
@@ -26,17 +26,15 @@ const basketTemplate = ensureElement<HTMLTemplateElement>('#basket');
 const orderTemplate = ensureElement<HTMLTemplateElement>('#order');
 const contactsTemplate = ensureElement<HTMLTemplateElement>('#contacts');
 
-// --- Состояние и DOM ---
+//  Состояние и DOM и Компоненты интерфейса 
 const appData = new AppState({}, events);
 const modal = new Modal(ensureElement<HTMLElement>('#modal-container'), events);
 const page = new Page(document.body, events);
-
-// --- Компоненты интерфейса ---
 const basket = new Basket(cloneTemplate(basketTemplate), events);
 const order = new Order(cloneTemplate(orderTemplate), events);
 const contacts = new Сontacts(cloneTemplate(contactsTemplate), events);
 
-// --- Рендер карточек ---
+//  Рендер карточек
 events.on('cards:changed', () => {
   page.catalog = appData.catalog.map((item) => {
     const card = new Card(cloneTemplate(cardCatalogTemplate), {
@@ -51,7 +49,7 @@ events.on('cards:changed', () => {
   });
 });
 
-// --- Открытие превью ---
+//  Открытие превью карточки
 events.on('card:select', (item: Product) => {
   appData.setPreview(item);
 });
@@ -76,7 +74,7 @@ events.on('preview:changed', (item: Product) => {
   });
 });
 
-// --- Добавление в корзину ---
+// Добавление в корзину 
 events.on('card:add', (item: Product) => {
   appData.addToOrder(item);
   appData.setProductToBasket(item);
@@ -84,7 +82,7 @@ events.on('card:add', (item: Product) => {
   modal.close();
 });
 
-// --- Открытие корзины ---
+//  Открытие корзины
 events.on('basket:open', () => {
   const hasOnlyOnePriceless = appData.basket.length === 1 && appData.basket[0].price === null;
   basket.setDisabled(basket.button, appData.basket.length === 0 || hasOnlyOnePriceless);
@@ -107,7 +105,7 @@ events.on('basket:open', () => {
   });
 });
 
-// --- Удаление из корзины ---
+//  Удаление из корзины 
 events.on('card:remove', (item: Product) => {
   appData.removeProductToBasket(item);
   appData.removeFromOrder(item);
@@ -132,7 +130,7 @@ events.on('card:remove', (item: Product) => {
   });
 });
 
-// --- Оформление заказа ---
+//  Оформление заказа 
 events.on('basket:submit', () => {
   modal.render({
     content: order.render({
@@ -170,7 +168,7 @@ events.on<{ field: string; value: string }>('contacts.phone:change', ({ value })
   contacts.valid = FormValidator.validateContacts(appData.order.email, appData.order.phone);
 });
 
-// --- Отправка заказа ---
+//  Отправка заказа 
 events.on('contacts:submit', () => {
   appData.total = appData.getTotal();
   appData.order.items = appData.getValidOrderItems();
@@ -198,7 +196,7 @@ events.on('contacts:submit', () => {
     });
 });
 
-// --- Прокрутка ---
+//  Прокрутка 
 events.on('modal:open', () => {
   page.locked = true;
 });
@@ -209,7 +207,7 @@ events.on('modal:close', () => {
   contacts.reset();
 });
 
-// --- Загрузка с сервера ---
+//  Загрузка с сервера 
 api.getProductList()
   .then(appData.setCatalog.bind(appData))
   .catch(err => {

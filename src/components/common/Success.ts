@@ -1,30 +1,36 @@
-import { ensureElement } from "../../utils/utils"; // Импорт утилиты ensureElement для безопасного поиска элементов DOM
-import { Component } from "../base/Component"; // Импорт базового класса Component
+import { ensureElement } from '../../utils/utils';
+import { Component } from '../base/Component';
 
-interface ISuccess { // Интерфейс данных для компонента Success
-  total: number; // Общее количество синапсов, которое будет отображаться
+interface ISuccess {
+	total: number;
 }
 
-interface ISuccessActions { // Интерфейс действий для компонента Success
-  onClick: () => void; // Функция, вызываемая при нажатии на кнопку закрытия
+interface ISuccessActions {
+	onClick: () => void;
 }
 
-export class Success extends Component<ISuccess> { // Класс Success, наследующий Component с типом ISuccess
-  protected _total: HTMLElement; // Элемент для отображения общего количества списанных синапсов
-  protected _close: HTMLElement; // Кнопка для закрытия сообщения об успешном заказе
+export class Success extends Component<ISuccess> {
+	protected _total: HTMLElement;
+	protected _close: HTMLElement;
 
-  constructor(container: HTMLElement, actions: ISuccessActions) { // Конструктор принимает контейнер и действия
-      super(container); // Вызов конструктора родителя
+	constructor(container: HTMLElement, actions: ISuccessActions) {
+		super(container);
 
-      this._close = ensureElement<HTMLElement>('.order-success__close', this.container); // Поиск кнопки закрытия
-      this._total = ensureElement<HTMLElement>('.order-success__description', this.container); // Поиск элемента для отображения суммы
+		this._close = ensureElement<HTMLElement>(
+			'.order-success__close',
+			this.container
+		);
+		this._total = ensureElement<HTMLElement>(
+			'.order-success__description',
+			this.container
+		);
 
-      if (actions?.onClick) { // Проверка наличия функции onClick
-          this._close.addEventListener('click', actions.onClick); // Добавление обработчика клика для вызова onClick
-      }
-  }
+		if (actions?.onClick) {
+			this._close.addEventListener('click', actions.onClick);
+		}
+	}
 
-  set total(value: string) { // Сеттер для установки отображаемого текста суммы
-    this._total.textContent = `Списано ${value} синапсов`; // Установка текста с отображением списанной суммы
-  }
+	set total(value: string) {
+		this._total.textContent = `Списано ${value} синапсов`;
+	}
 }

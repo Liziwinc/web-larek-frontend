@@ -1,14 +1,8 @@
-// import { Card } from './Card';
-// import { IProduct } from '../../types/index';
+import { IPage } from '../types/index';
 import { IEvents } from './base/events'
 import {Component} from "./base/Component";
 import {ensureElement} from "../utils/utils";
 
-interface IPage {
-    counter: number;
-    catalog: HTMLElement[];
-    locked: boolean;
-}
 
 export class Page extends Component<IPage> {
     protected _counter: HTMLElement;
@@ -46,22 +40,3 @@ export class Page extends Component<IPage> {
         }
     }
 }
-
-
-// export class Page {
-//   constructor(
-//     public container: HTMLElement,
-//     private catalog: HTMLElement,
-//     private cardTemplate: HTMLTemplateElement,
-//     private events: IEvents
-//   ) {}
-
-//   set items(products: IProduct[]) {
-//     this.catalog.innerHTML = '';
-//     products.forEach(product => {
-//       const cardElement = this.cardTemplate.content.firstElementChild!.cloneNode(true) as HTMLElement;
-//       const card = new Card(cardElement, this.events);
-//       this.catalog.append(card.render(product));
-//     });
-//   }
-// }

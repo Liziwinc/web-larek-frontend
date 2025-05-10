@@ -13,6 +13,34 @@ export interface IProduct {
   price: number | null;
 }
 
+export interface ICardActions {
+  onClick: (event: MouseEvent) => void;
+}
+
+export interface ICard {
+  // Интерфейс для структуры данных карточки
+  title: string;
+  category: string;
+  image: string;
+  price: number;
+  text: string;
+}
+
+export interface ICardPreview {
+	text: string;
+}
+
+export interface ICardBasket {
+  title: string;
+  price: number;
+  index: number;
+}
+
+export interface IBasket {
+  items: HTMLElement[];
+  total: number;
+}
+
 export interface IBasketItem {
   product: IProduct;
 }
@@ -54,6 +82,11 @@ export interface IBasketModel {
   getTotal(): number;
 }
 
+export interface IFormState {
+  valid: boolean;
+  errors: string[];
+}
+
 export interface ICheckoutFormModel {
   payment: PaymentMethod | null;
   email: string;
@@ -86,6 +119,10 @@ export interface IModal {
   render(): HTMLElement;
 }
 
+export interface IModalData {
+	content: HTMLElement;
+}
+
 export interface IAppState {
   catalog: IProduct[];
   preview: string;
@@ -93,6 +130,12 @@ export interface IAppState {
   order: IOrder;
   total: string | number;
   loading: boolean;
+}
+
+export interface IPage {
+  counter: number;
+  catalog: HTMLElement[];
+  locked: boolean;
 }
 
 
