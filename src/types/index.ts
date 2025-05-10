@@ -63,41 +63,14 @@ export interface IOrderResult {
 }
 
 //Данные моделей
-export interface IProductsModel {
-  products: IProduct[];
-  selectedProduct: IProduct | null;
-  init(items: IProduct[]): void;
-  getAll(): IProduct[];
-  select(id: string): void;
-  clearSelection(): void;
-}
 
-export interface IBasketModel {
-  items: IBasketItem[];
-  init(items: IBasketItem[]): void;
-  add(product: IProduct): void;
-  remove(productId: string): void;
-  clear(): void;
-  getItems(): IBasketItem[];
-  getTotal(): number;
-}
 
 export interface IFormState {
   valid: boolean;
   errors: string[];
 }
 
-export interface ICheckoutFormModel {
-  payment: PaymentMethod | null;
-  email: string;
-  phone: string;
-  address: string;
-  setPayment(method: PaymentMethod): boolean;
-  setEmail(email: string): boolean;
-  setPhone(phone: string): boolean;
-  setAddress(address: string): boolean;
-  reset(): void;
-}
+
 
 //Интерфейс клиента API
 export interface IApiClient {
@@ -138,4 +111,33 @@ export interface IPage {
   locked: boolean;
 }
 
+export interface ICheckoutFormModel {
+  payment: PaymentMethod | null;
+  email: string;
+  phone: string;
+  address: string;
+  setPayment(method: PaymentMethod): boolean;
+  setEmail(email: string): boolean;
+  setPhone(phone: string): boolean;
+  setAddress(address: string): boolean;
+  reset(): void;
+}
 
+export interface IProductsModel {
+  products: IProduct[];
+  selectedProduct: IProduct | null;
+  init(items: IProduct[]): void;
+  getAll(): IProduct[];
+  select(id: string): void;
+  clearSelection(): void;
+}
+
+export interface IBasketModel {
+  items: IBasketItem[];
+  init(items: IBasketItem[]): void;
+  add(product: IProduct): void;
+  remove(productId: string): void;
+  clear(): void;
+  getItems(): IBasketItem[];
+  getTotal(): number;
+}

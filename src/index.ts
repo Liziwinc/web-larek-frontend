@@ -171,8 +171,10 @@ events.on<{ field: string; value: string }>('contacts.phone:change', ({ value })
 //  Отправка заказа 
 events.on('contacts:submit', () => {
   appData.total = appData.getTotal();
-  appData.order.items = appData.getValidOrderItems();
-
+  // appData.order.items = appData.getValidOrderItems();
+  const validItems = appData.basket.filter((item) => item.price !== null).map((item) => item.id);
+  appData.order.items = validItems;
+  
 
   api.post('/order', appData.order)
     .then(() => {

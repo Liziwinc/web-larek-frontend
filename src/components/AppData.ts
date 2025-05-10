@@ -73,11 +73,6 @@ export class AppState extends Model<IAppState> {
 		return this.basket.reduce((sum, item) => sum + (item.price ?? 0), 0);
 	}
 
-	getValidOrderItems(): string[] {
-		return this.basket
-			.filter((item) => item.price !== null)
-			.map((item) => item.id);
-	}
 }
 
 export class Product extends Model<IProduct> {
