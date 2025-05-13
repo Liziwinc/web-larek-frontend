@@ -10,8 +10,6 @@ import { Modal } from './components/common/Modal';
 import { Basket } from './components/common/Basket';
 import { Order, Сontacts } from './components/Order';
 import { Success } from './components/common/Success';
-import { FormValidator } from './components/common/Form';
-
 
 // API и события
 const api = new WebLarekApi(CDN_URL, API_URL);
@@ -76,7 +74,7 @@ events.on('preview:changed', (item: Product) => {
 
 // Добавление в корзину 
 events.on('card:add', (item: Product) => {
-  appData.addToOrder(item);
+  // appData.addToOrder(item);
   appData.setProductToBasket(item);
   page.counter = appData.basket.length;
   modal.close();
@@ -108,20 +106,19 @@ events.on('basket:open', () => {
 //  Удаление из корзины 
 events.on('card:remove', (item: Product) => {
   appData.removeProductToBasket(item);
-  appData.removeFromOrder(item);
+  // appData.removeFromOrder(item);
   page.counter = appData.bskt.length;
   basket.setDisabled(basket.button, appData.statusBasket);
   basket.total = appData.getTotal();
 
-  let i = 1;
-  basket.items = appData.bskt.map((item) => {
+  basket.items = appData.bskt.map((item, index) => {
     const card = new CardBasket(cloneTemplate(cardBasketTemplate), {
       onClick: () => events.emit('card:remove', item)
     });
     return card.render({
       title: item.title,
       price: item.price,
-      index: i++
+      index: index + 1,
     });
   });
 
@@ -140,15 +137,23 @@ events.on('basket:submit', () => {
   });
 });
 
+// Ввод адреса
 events.on<{ field: string; value: string }>('order.address:change', ({ value }) => {
-  appData.order.address = value;
-  order.valid = !!value.trim();
+  appData.setAddress(value);
 });
 
+// Выбор способа оплаты
 events.on('payment:change', (button: HTMLButtonElement) => {
-  appData.order.payment = button.name as 'cash' | 'online';
+  appData.setPayment(button.name as 'cash' | 'online');
 });
 
+// Валидация формы заказа
+events.on<{ errors: string[]; valid: boolean }>('order:validation', ({ errors, valid }) => {
+  order.valid = valid;
+  order.errors = errors.join(', ');
+});
+
+// Переход ко второму шагу
 events.on('order:submit', () => {
   modal.render({
     content: contacts.render({
@@ -158,40 +163,39 @@ events.on('order:submit', () => {
   });
 });
 
+// Ввод email
 events.on<{ field: string; value: string }>('contacts.email:change', ({ value }) => {
-  appData.order.email = value;
-  contacts.valid = FormValidator.validateContacts(appData.order.email, appData.order.phone);
+  appData.setEmail(value);
 });
 
+// Ввод телефона
 events.on<{ field: string; value: string }>('contacts.phone:change', ({ value }) => {
-  appData.order.phone = value;
-  contacts.valid = FormValidator.validateContacts(appData.order.email, appData.order.phone);
+  appData.setPhone(value);
 });
 
-//  Отправка заказа 
+// Валидация формы контактов
+events.on<{ errors: string[]; valid: boolean }>('contacts:validation', ({ errors, valid }) => {
+  contacts.valid = valid;
+  contacts.errors = errors.join(', ');
+});
+
+// Отправка заказа
 events.on('contacts:submit', () => {
-  appData.total = appData.getTotal();
-  // appData.order.items = appData.getValidOrderItems();
-  const validItems = appData.basket.filter((item) => item.price !== null).map((item) => item.id);
-  appData.order.items = validItems;
-  
+  const orderToSend = appData.createOrderToPost();
 
-  api.post('/order', appData.order)
+  api.post('/order', orderToSend)
     .then(() => {
-      appData.basket = []; 
-      contacts.reset();         
-      order.reset();
+      appData.basket = [];
+      appData.resetOrder();
       page.counter = 0;
+      order.reset();
+      contacts.reset();
 
-      const successComponent = new Success(cloneTemplate(successTemplate), {
+      const success = new Success(cloneTemplate(successTemplate), {
         onClick: () => modal.close()
       });
-
-      successComponent.total = String(appData.total);
-
-      modal.render({
-        content: successComponent.render()
-      });
+      success.total = String(orderToSend.total);
+      modal.render({ content: success.render() });
     })
     .catch((err) => {
       console.error('Ошибка при оформлении заказа:', err);
@@ -205,6 +209,7 @@ events.on('modal:open', () => {
 
 events.on('modal:close', () => {
   page.locked = false;
+  appData.resetOrder();
   order.reset();
   contacts.reset();
 });
